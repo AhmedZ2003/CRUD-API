@@ -1,8 +1,3 @@
-"""
-Task API — a small CRUD API for a to-do list.
-Built with FastAPI. Data lives in memory only (resets on restart — that's intentional, see README).
-"""
-
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import Optional
@@ -13,9 +8,7 @@ app = FastAPI(
     description="A small in-memory CRUD API for managing a to-do list.",
 )
 
-# ---------------------------------------------------------------------------
 # Stage 2: in-memory "database" — just a list, pre-filled with 3 example tasks
-# ---------------------------------------------------------------------------
 tasks = [
     {"id": 1, "title": "Buy milk", "done": False},
     {"id": 2, "title": "Write README", "done": False},
@@ -24,9 +17,7 @@ tasks = [
 next_id = 4  # tracks the next free id so we never reuse one, even after deletes
 
 
-# ---------------------------------------------------------------------------
 # Request/response models
-# ---------------------------------------------------------------------------
 class TaskCreate(BaseModel):
     title: Optional[str] = None  # optional here so a missing title is our own 400,
     # not FastAPI's default 422 "unprocessable entity"
@@ -36,10 +27,7 @@ class TaskUpdate(BaseModel):
     title: Optional[str] = None
     done: Optional[bool] = None
 
-
-# ---------------------------------------------------------------------------
 # Stage 1: root + health
-# ---------------------------------------------------------------------------
 @app.get("/", tags=["meta"], summary="API info")
 def read_root():
     """Describes the API and lists its endpoints."""
@@ -55,10 +43,7 @@ def health_check():
     """Returns ok if the server is alive. Used by monitors/load balancers."""
     return {"status": "ok"}
 
-
-# ---------------------------------------------------------------------------
 # Stage 2: Read (list + single), with filtering/search/pagination as extras
-# ---------------------------------------------------------------------------
 @app.get("/tasks", tags=["tasks"], summary="List tasks")
 def list_tasks(
     done: Optional[bool] = None,
@@ -97,10 +82,7 @@ def get_task(task_id: int):
             return task
     raise HTTPException(status_code=404, detail=f"Task {task_id} not found")
 
-
-# ---------------------------------------------------------------------------
 # Stage 3: Create
-# ---------------------------------------------------------------------------
 @app.post("/tasks", status_code=201, tags=["tasks"], summary="Create a task")
 def create_task(task: TaskCreate):
     """
@@ -119,10 +101,7 @@ def create_task(task: TaskCreate):
     next_id += 1
     return new_task
 
-
-# ---------------------------------------------------------------------------
 # Stage 4: Update & Delete
-# ---------------------------------------------------------------------------
 @app.put("/tasks/{task_id}", tags=["tasks"], summary="Update a task")
 def update_task(task_id: int, update: TaskUpdate):
     """
@@ -154,9 +133,7 @@ def delete_task(task_id: int):
     raise HTTPException(status_code=404, detail=f"Task {task_id} not found")
 
 
-# ---------------------------------------------------------------------------
 # Extras: stats + reset
-# ---------------------------------------------------------------------------
 @app.get("/stats", tags=["extras"], summary="Task statistics")
 def get_stats():
     """The server computing something instead of just storing it."""
